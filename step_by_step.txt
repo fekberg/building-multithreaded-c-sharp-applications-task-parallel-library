@@ -1,0 +1,219 @@
+# m2-2
+
+```
+private void Search_Click(object sender, RoutedEventArgs e)
+{
+    BeforeLoadingStockData();
+
+    var stocks = new Dictionary<string, IEnumerable<StockPrice>>
+    {
+        { "MSFT", Generate("MSFT") },
+        { "GOOGL", Generate("GOOGL") },
+        { "PS", Generate("PS") },
+        { "AMAZ", Generate("AMAZ") },
+    };
+
+    var bag = new ConcurrentBag<StockCalculation>();
+
+    Parallel.Invoke(
+        new ParallelOptions { MaxDegreeOfParallelism = 2 },
+        () => {
+            var msft = Calculate(stocks["MSFT"]);
+            bag.Add(msft);
+        },
+        () => {
+            var googl = Calculate(stocks["GOOGL"]);
+            bag.Add(googl);
+        },
+        () => {
+            var ps = Calculate(stocks["PS"]);
+            bag.Add(ps);
+        },
+        () => {
+            var amaz = Calculate(stocks["AMAZ"]);
+            bag.Add(amaz);
+        }
+    );
+
+
+    Stocks.ItemsSource = bag;
+
+    AfterLoadingStockData();
+}
+```
+
+
+
+# m2-3
+```
+private async void Search_Click(object sender, RoutedEventArgs e)
+{
+    BeforeLoadingStockData();
+
+    var stocks = new Dictionary<string, IEnumerable<StockPrice>>
+    {
+        { "MSFT", Generate("MSFT") },
+        { "GOOGL", Generate("GOOGL") },
+        { "PS", Generate("PS") },
+        { "AMAZ", Generate("AMAZ") },
+    };
+
+    var bag = new ConcurrentBag<StockCalculation>();
+
+    await Task.Run(() =>
+    {
+        Parallel.Invoke(
+            new ParallelOptions { MaxDegreeOfParallelism = 2 },
+            () =>
+            {
+                var msft = Calculate(stocks["MSFT"]);
+                bag.Add(msft);
+            },
+            () =>
+            {
+                var googl = Calculate(stocks["GOOGL"]);
+                bag.Add(googl);
+            },
+            () =>
+            {
+                var ps = Calculate(stocks["PS"]);
+                bag.Add(ps);
+            },
+            () =>
+            {
+                var amaz = Calculate(stocks["AMAZ"]);
+                bag.Add(amaz);
+            }
+        );
+    });
+
+    Stocks.ItemsSource = bag;
+
+    AfterLoadingStockData();
+}
+```
+
+# m2-4
+
+```
+private async void Search_Click(object sender, RoutedEventArgs e)
+{
+    BeforeLoadingStockData();
+
+    var stocks = new Dictionary<string, IEnumerable<StockPrice>>
+    {
+        { "MSFT", Generate("MSFT") },
+        { "GOOGL", Generate("GOOGL") },
+        { "PS", Generate("PS") },
+        { "AMAZ", Generate("AMAZ") },
+    };
+
+    var bag = new ConcurrentBag<StockCalculation>();
+    try
+    {
+        await Task.Run(() =>
+        {
+            try
+            {
+                Parallel.Invoke(
+                    new ParallelOptions { MaxDegreeOfParallelism = 1 },
+                    () =>
+                    {
+                        var msft = Calculate(stocks["MSFT"]);
+                        bag.Add(msft);
+                        throw new Exception("MSFT");
+                    },
+                    () =>
+                    {
+                        var googl = Calculate(stocks["GOOGL"]);
+                        bag.Add(googl);
+                        throw new Exception("GOOGL");
+                    },
+                    () =>
+                    {
+                        var ps = Calculate(stocks["PS"]);
+                        bag.Add(ps);
+                    },
+                    () =>
+                    {
+                        var amaz = Calculate(stocks["AMAZ"]);
+                        bag.Add(amaz);
+                    }
+                );
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        });
+    }
+    catch(Exception ex)
+    {
+        Notes.Text = ex.Message;
+    }
+
+    Stocks.ItemsSource = bag;
+
+    AfterLoadingStockData();
+}
+```
+
+
+# m2-5
+
+```
+ private async void Search_Click(object sender, RoutedEventArgs e)
+{
+    BeforeLoadingStockData();
+
+    var stocks = new Dictionary<string, IEnumerable<StockPrice>>
+    {
+        { "MSFT", Generate("MSFT") },
+        { "GOOGL", Generate("GOOGL") },
+        { "PS", Generate("PS") },
+        { "AMAZ", Generate("AMAZ") },
+        { "ABC", Generate("ABC") },
+        { "DEF", Generate("DEF") },
+    };
+
+    var bag = new ConcurrentBag<StockCalculation>();
+    try
+    {
+        await Task.Run(() =>
+        {
+            try
+            {
+                var paralleLoopResult = Parallel.ForEach(stocks, 
+                    new ParallelOptions { MaxDegreeOfParallelism = 1},
+                    (element, state) => {
+                        if (element.Key == "MSFT" || state.ShouldExitCurrentIteration)
+                        {
+                            state.Break();
+
+                            return;
+                        }
+                        else
+                        {
+                            var result = Calculate(element.Value);
+                            bag.Add(result);
+                        }
+                });
+
+                
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        });
+    }
+    catch(Exception ex)
+    {
+        Notes.Text = ex.Message;
+    }
+
+    Stocks.ItemsSource = bag;
+
+    AfterLoadingStockData();
+}
+```
