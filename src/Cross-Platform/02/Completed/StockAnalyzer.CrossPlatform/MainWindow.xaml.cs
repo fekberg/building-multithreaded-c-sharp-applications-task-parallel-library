@@ -6,6 +6,7 @@ using Avalonia.Markup.Xaml;
 using Newtonsoft.Json;
 using StockAnalyzer.Core.Domain;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -55,12 +56,6 @@ namespace StockAnalyzer.CrossPlatform
 
         private async void Search_Click(object sender, RoutedEventArgs e)
         {
-             Parallel.For(0, 4, (index) => {
-                Dispatcher.Invoke(() =>
-                {
-                    // Run on UI Thread
-                });
-            });
             BeforeLoadingStockData();
 
             var stocks = new Dictionary<string, IEnumerable<StockPrice>>
